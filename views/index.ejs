@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node.js Web App</title>
+</head>
+<body>
+    <audio id="beepAudio" src="Censorship.mp3" preload="auto"></audio>
+    <h1>Node.js Web App</h1>
+    <form id="dataForm" action="/getData" method="post">
+        <label for="partner_id">Partner ID:</label>
+        <input type="text" id="partner_id" name="partner_id" placeholder="partner_id">
+        <input type="text" id="console" name="console" placeholder="console">
+        <input type="text" id="game_year" name="game_year" placeholder="game_year">
+        <input type="text" id="secret_key" name="secret_key" placeholder="secret_key">
+        <!-- Add other input fields as needed -->
+
+        <button type="button" onclick="sendRequest()">Send Request</button>
+
+        <div id="result"></div>
+        <div id="error" style="color: red;"></div>
+    </form>
+
+    <!-- Your existing HTML code -->
+
+<script>
+    let intervalId;
+
+    function sendRequest() {
+        // Set up a new interval when the button is clicked
+        intervalId = setInterval(getData, 1000);
+    }
+
+    function stopInterval() {
+        // Clear the interval using the intervalId
+        clearInterval(intervalId);
+    }
+
+    async function getData() {
+        try {
+            const formData = new FormData(document.getElementById('dataForm'));
+
+            const response = await fetch('/getData', {
+                method: 'POST',
+                body: formData,
+            });
+
+            // Check the response status
+            if (response.status === 500 || response.status === 404) {
+                // Stop the interval if the status is 500 or 404
+                stopInterval();
+                displayError('Error: Server returned status ' + response.status);
+                return;
+            }
+
+            const data = await response.json();
+
+            // Continue processing the data if the status is not 500 or 404
+            displayData(data);
+        } catch (error) {
+            console.log(error);
+            displayError(error.message);
+        }
+    }
+
+    function displayData(data) {
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = '';
+
+        for (const key in data) {
+            if (Object.hasOwnProperty.call(data, key)) {
+                // if key was error and value was empty, there is something good happening
+                if (key == "error" && value == "") {
+                    stopInterval();
+                    playBeep();
+                    playBeep();
+                    playBeep();
+                    playBeep();
+                    
+                }
+                const value = data[key];
+                resultDiv.innerHTML += `<p><strong>${key}:</strong> ${value}</p>`;
+            }
+        }
+    }
+
+    function displayError(errorMessage) {
+        const errorDiv = document.getElementById('error');
+        errorDiv.textContent = errorMessage;
+    }
+    function playBeep() {
+        // Get the audio element
+        const beepAudio = document.getElementById('beepAudio');
+
+        // Play the beep sound
+        beepAudio.play();
+    }
+    playBeep();
+</script>
+</body>
+</html>
+
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Example</title>
+    <script src="md5.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      #result {
+        text-align: left;
+        max-width: 400px;
+      }
+
+      #error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <label for="partner_id">partner_id:</label>
+      <input type="text" id="partner_id" value="" />
+      <br />
+
+      <label for="secret_key">secret_key:</label>
+      <input type="text" id="secret_key" value="" />
+      <br />
+
+      <label for="take_after">take_after:</label>
+      <input type="text" id="take_after" value="default_value" />
+      <br />
+
+      <label for="max_buy">max_buy:</label>
+      <input type="text" id="max_buy" value="default_value" />
+      <br />
+
+      <label for="min_buy">min_buy:</label>
+      <input type="text" id="min_buy" value="default_value" />
+      <br />
+
+      <label for="console">console:</label>
+      <input type="text" id="console" value="default_value" />
+      <br />
+
+      <label for="game_year">game_year:</label>
+      <input type="text" id="game_year" value="default_value" />
+      <br />
+
+      <button onClick="getData()">Fetch Data</button>
+      <div id="result"></div>
+      <div id="error"></div>
+    </div>
+
+    <script>
+      // Load partner_id and secret_key from localStorage on page load
+      const storedPartnerId = localStorage.getItem("partner_id") || "";
+      const storedSecretKey = localStorage.getItem("secret_key") || "";
+
+      document.getElementById("partner_id").value = storedPartnerId;
+      document.getElementById("secret_key").value = storedSecretKey;
+
+      async function getData() {
+        try {
+          const currentUnixTimeInSeconds = Math.floor(Date.now() / 1000);
+          const partnerId = document.getElementById("partner_id").value;
+          const secretKey = document.getElementById("secret_key").value;
+          const takeAfter = document.getElementById("take_after").value;
+          const maxBuy = document.getElementById("max_buy").value;
+          const minBuy = document.getElementById("min_buy").value;
+          const timestamp = Math.floor(Date.now() / 1000);
+          const signature = MD5.generate(partnerId + secretKey + timestamp);
+          const consoleValue = document.getElementById("console").value;
+          const gameYear = document.getElementById("game_year").value;
+
+          // Store partner_id and secret_key in localStorage
+          localStorage.setItem("partner_id", partnerId);
+          localStorage.setItem("secret_key", secretKey);
+
+          // const queryParams = `?take_after=${takeAfter}&max_buy=${maxBuy}&min_buy=${minBuy}&signature=${signature}&timestamp=${timestamp}&partner_id=${partnerId}&console=${consoleValue}&game_year=${gameYear}`;
+          const queryParams = `?take_after=${takeAfter}&max_buy=${maxBuy}&min_buy=${minBuy}`;
+
+          // const response2 = await fetch(`https://dsfut.net/api/${gameYear}/${consoleValue}/${partnerId}/${timestamp}/${signature}${queryParams}`);
+          const response = await fetch(`https://dsfut.net/api/${gameYear}/${consoleValue}/${partnerId}/${timestamp}/${signature}`);
+          const data = await response.json();
+
+          displayData(data);
+        } catch (error) {
+          console.log(error);
+          displayError(error.message);
+        }
+      }
+
+      function displayData(data) {
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = "";
+
+        for (const key in data) {
+          if (Object.hasOwnProperty.call(data, key)) {
+            const value = data[key];
+            resultDiv.innerHTML += `<p><strong>${key}:</strong> ${value}</p>`;
+          }
+        }
+      }
+
+      function displayError(errorMessage) {
+        const errorDiv = document.getElementById("error");
+        errorDiv.textContent = errorMessage;
+      }
+    </script>
+  </body>
+</html>
